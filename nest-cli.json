@@ -1,0 +1,14 @@
+{
+    "collection": "@nestjs/schematics",
+    "sourceRoot": "src",
+    "compilerOptions": {
+        "assets": [
+            ".env",
+            ".env.*",
+            {
+                "include": "resources/i18n/**/*",
+                "watchAssets": true
+            }
+        ]
+    }
+}
