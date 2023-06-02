@@ -10,6 +10,8 @@ import { UserService } from './user/user.service';
 import { AllSchemas } from '@/entities/index-core';
 import {ContactController} from "@/modules/app/system/contact/contact.controller";
 import {ContactService} from "@/modules/app/system/contact/contact.service";
+import {ContactGroupService} from "@/modules/app/system/contact-group/contact-group.service";
+import {ContactGroupController} from "@/modules/app/system/contact-group/contact-group.controller";
 
 @Module({
     imports: [
@@ -19,12 +21,14 @@ import {ContactService} from "@/modules/app/system/contact/contact.service";
     controllers: [
         UserController,
         ContactController,
+        ContactGroupController,
     ],
     providers: [
         rootRoleIdProvider(),
 
         // Core services
         ContactService,
+        ContactGroupService,
         UserService,
     ],
     exports: [
