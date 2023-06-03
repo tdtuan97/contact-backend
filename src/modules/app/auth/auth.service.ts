@@ -1,11 +1,11 @@
-import {Injectable} from '@nestjs/common';
-import {JwtService} from '@nestjs/jwt';
-import {isEmpty} from 'lodash';
-import {UtilService} from 'src/shared/services/util.service';
-import {RedisService} from 'src/shared/services/redis.service';
-import {UserService} from '../system/user/user.service';
-import {RegisterDto} from './auth.dto';
-import {ApiValidationException} from '@/common/exceptions/api-validation.exception';
+import { Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { isEmpty } from 'lodash';
+import { UtilService } from 'src/shared/services/util.service';
+import { RedisService } from 'src/shared/services/redis.service';
+import { UserService } from '../system/user/user.service';
+import { RegisterDto } from './auth.dto';
+import { ApiValidationException } from '@/common/exceptions/api-validation.exception';
 
 @Injectable()
 export class AuthService {
@@ -14,8 +14,7 @@ export class AuthService {
         private userService: UserService,
         private util: UtilService,
         private jwtService: JwtService,
-    ) {
-    }
+    ) {}
 
     /**
      * Register user
@@ -44,6 +43,7 @@ export class AuthService {
                 `Not found email [${email}]`,
             );
         }
+
         const comparePassword = this.util.bcryptCompare(
             password,
             user.password,

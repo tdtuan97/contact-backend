@@ -24,10 +24,10 @@ export abstract class BaseEntity extends BaseCommonEntity {
     updated_at: Date;
 
     @Column()
-    created_user: string;
+    created_user: number;
 
     @Column()
-    updated_user: string;
+    updated_user: number;
 
     /**
      * Scope query available

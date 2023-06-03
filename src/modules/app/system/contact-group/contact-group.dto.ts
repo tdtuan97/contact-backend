@@ -4,12 +4,37 @@ import { IsOptional, IsString } from 'class-validator';
 
 export class ContactGroupPaginateDto extends PageOptionsDto {
     @ApiProperty({
-        required: false,
-        description: 'Query string',
-        type: String,
-        example: 'q=xxxx',
+        description: 'Contact name',
     })
     @IsOptional()
     @IsString()
-    q = '';
+    name = '';
+}
+
+export class ContactGroupCreateDto {
+    @ApiProperty({
+        description: 'Contact name',
+    })
+    @IsString()
+    name: string;
+
+    @ApiProperty({
+        description: 'Contact description',
+    })
+    @IsString()
+    description: string;
+}
+
+export class ContactGroupUpdateDto {
+    @ApiProperty({
+        description: 'Contact name',
+    })
+    @IsString()
+    name: string;
+
+    @ApiProperty({
+        description: 'Contact description',
+    })
+    @IsString()
+    description: string;
 }

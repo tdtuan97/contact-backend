@@ -8,7 +8,7 @@ export class ApiValidationException extends HttpException {
         let response = {};
         response[property] = Array.isArray(message) ? message : [message];
         // Customize for flutter app
-        response['message_app'] = response[property][0];
+        //response['message_app'] = response[property][0];
         super(response, HttpStatus.UNPROCESSABLE_ENTITY);
         this.message = 'Unprocessable Entity Exception';
     }

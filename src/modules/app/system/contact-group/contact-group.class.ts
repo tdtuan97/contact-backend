@@ -12,4 +12,13 @@ export class ContactGroupResponse {
 
     @ApiProperty({ description: 'Group description' })
     description: string;
+
+    @ApiProperty({ description: 'Create user' })
+    created_user: number;
+
+    @ApiProperty({ description: 'Created date' })
+    created_at: Date;
+
+    @ApiProperty({ description: 'Updated date' })
+    updated_at: Date;
 }

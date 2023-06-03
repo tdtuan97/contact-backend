@@ -5,13 +5,8 @@ import { ApiException } from 'src/common/exceptions/api.exception';
 import { UtilService } from 'src/shared/services/util.service';
 import { EntityManager, In, Not, Repository } from 'typeorm';
 import { RedisService } from 'src/shared/services/redis.service';
-import {
-    AccountInfo,
-} from './user.class';
-import {
-    UpdatePasswordDto,
-    UpdateUserInfoDto,
-} from './user.dto';
+import { AccountInfo } from './user.class';
+import { UpdatePasswordDto, UpdateUserInfoDto } from './user.dto';
 import TblUser from '@/entities/core/tbl-user.entity';
 import { ApiValidationException } from '@/common/exceptions/api-validation.exception';
 import { RegisterDto } from '@/modules/app/auth/auth.dto';
@@ -73,13 +68,24 @@ export class UserService {
             'base64',
         ).toString('utf-8');
 
-        const exists = await this.userRepository.findOne({
+        let exists = await this.userRepository.findOne({
             where: { username: username },
         });
         if (!isEmpty(exists)) {
             throw new ApiValidationException(
                 'username',
                 `The username [${username}] already exists`,
+            );
+        }
+
+        // Check duplicate email
+        exists = await this.userRepository.findOne({
+            where: { email: registerDto.email },
+        });
+        if (!isEmpty(exists)) {
+            throw new ApiValidationException(
+                'email',
+                `The email [${registerDto.email}] already exists`,
             );
         }
 
