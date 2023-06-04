@@ -1,6 +1,6 @@
 import { PageOptionsDto } from '@/common/dto/page.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class ContactGroupPaginateDto extends PageOptionsDto {
     @ApiProperty({
@@ -8,33 +8,40 @@ export class ContactGroupPaginateDto extends PageOptionsDto {
     })
     @IsOptional()
     @IsString()
+    @MaxLength(255)
     name = '';
 }
 
 export class ContactGroupCreateDto {
     @ApiProperty({
-        description: 'Contact name',
+        description: 'Group name',
     })
     @IsString()
+    @MinLength(1)
+    @MaxLength(255)
     name: string;
 
     @ApiProperty({
-        description: 'Contact description',
+        description: 'Group description',
     })
     @IsString()
+    @MaxLength(255)
     description: string;
 }
 
 export class ContactGroupUpdateDto {
     @ApiProperty({
-        description: 'Contact name',
+        description: 'Group name',
     })
     @IsString()
+    @MinLength(1)
+    @MaxLength(255)
     name: string;
 
     @ApiProperty({
-        description: 'Contact description',
+        description: 'Group description',
     })
     @IsString()
+    @MaxLength(255)
     description: string;
 }

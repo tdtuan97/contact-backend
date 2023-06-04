@@ -7,11 +7,11 @@ export class ContactResponse {
     @ApiProperty({ description: 'Contact ID' })
     id: number;
 
-    @ApiProperty({ description: 'Contact Group ID' })
+    @ApiProperty({ description: 'Group ID' })
     group_id: number;
 
-    @ApiProperty({ description: 'User ID' })
-    user_id: number;
+    @ApiProperty({ description: 'Group Name' })
+    group_name: string;
 
     @ApiProperty({ description: 'Contact Name' })
     name: string;
@@ -21,4 +21,13 @@ export class ContactResponse {
 
     @ApiProperty({ description: 'Contact Email' })
     email: string;
+
+    @ApiProperty({ description: 'Create user' })
+    created_user: number;
+
+    @ApiProperty({ description: 'Created date' })
+    created_at: Date;
+
+    @ApiProperty({ description: 'Updated date' })
+    updated_at: Date;
 }

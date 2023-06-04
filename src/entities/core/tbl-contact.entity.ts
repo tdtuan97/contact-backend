@@ -1,9 +1,5 @@
 import { BaseEntity } from '@/entities/base.entity';
-import {
-    PrimaryGeneratedColumn,
-    Column,
-    Entity,
-} from 'typeorm';
+import { PrimaryGeneratedColumn, Column, Entity } from 'typeorm';
 
 @Entity({ name: 'tbl_contact' })
 export default class TblContact extends BaseEntity {
@@ -14,9 +10,6 @@ export default class TblContact extends BaseEntity {
 
     @Column()
     group_id: number;
-
-    @Column()
-    user_id: number;
 
     @Column()
     name: string;

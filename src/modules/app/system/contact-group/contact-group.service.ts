@@ -2,7 +2,6 @@ import { ApiValidationException } from '@/common/exceptions/api-validation.excep
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import TblContact from '@/entities/core/tbl-contact.entity';
 import TblContactGroup from '@/entities/core/tbl-contact-group.entity';
 import { ContactGroupResponse } from '@/modules/app/system/contact-group/contact-group.class';
 import {
@@ -32,8 +31,9 @@ export class ContactGroupService {
         let result: ContactGroupResponse[] = [];
 
         let builder = this.contactGroupRepository
-            .createQueryBuilder(TblContact.tableName)
-            .where(TblContact.queryStrAvailable())
+            .createQueryBuilder(TblContactGroup.tableName)
+            .select('*')
+            .where(TblContactGroup.queryStrAvailable())
             .andWhere(`created_user = ${userId}`);
 
         if (name) {
@@ -47,8 +47,8 @@ export class ContactGroupService {
             .offset((page - 1) * limit)
             .limit(limit);
 
-        const [_, total] = await builder.getManyAndCount();
-        const list = await builder.getMany();
+        const total = await builder.getCount();
+        const list: TblContactGroup[] = await builder.getRawMany();
 
         list.map((item) => {
             result.push({
@@ -181,7 +181,7 @@ export class ContactGroupService {
         if (check) {
             throw new ApiValidationException(
                 'name',
-                `Contact name already exists.`,
+                `Group name already exists.`,
             );
         }
     }
@@ -203,7 +203,7 @@ export class ContactGroupService {
         if (!item) {
             throw new ApiValidationException(
                 'id',
-                `Contact id [${id}] not found`,
+                `Group id [${id}] not found`,
             );
         }
 

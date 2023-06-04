@@ -23,13 +23,13 @@ import {
 import { AuthUser } from '@/modules/app/core/decorators/auth-user.decorator';
 import { IAuthUser } from '@/modules/app/contact-app.interface';
 
-@ApiTags('Contact')
+@ApiTags('Contact Group')
 @Controller('contact-groups')
 export class ContactGroupController {
     constructor(private contactGroupService: ContactGroupService) {}
 
     @ApiOperation({
-        summary: 'Contact group list',
+        summary: 'List',
     })
     @ApiOkResponsePaginated(ContactGroupPaginateResponse)
     @Get()
@@ -52,7 +52,7 @@ export class ContactGroupController {
     }
 
     @ApiOperation({
-        summary: 'Contact group detail',
+        summary: 'Detail',
     })
     @ApiOkResponse({ type: ContactGroupResponse })
     @Get(':id')
@@ -64,7 +64,7 @@ export class ContactGroupController {
     }
 
     @ApiOperation({
-        summary: 'Contact group create',
+        summary: 'Create',
     })
     @ApiOkResponse({ type: ContactGroupResponse })
     @Post('')
@@ -76,7 +76,7 @@ export class ContactGroupController {
     }
 
     @ApiOperation({
-        summary: 'Contact group update',
+        summary: 'Update',
     })
     @ApiOkResponse({ type: ContactGroupResponse })
     @Put(':id')
@@ -89,9 +89,8 @@ export class ContactGroupController {
     }
 
     @ApiOperation({
-        summary: 'Contact group delete',
+        summary: 'Delete',
     })
-    @ApiOkResponse({ type: ContactGroupResponse })
     @Delete(':id')
     async delete(
         @Param() params: any,
