@@ -3,11 +3,12 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
     IsNumber,
     IsOptional,
-    IsPhoneNumber,
     IsString,
     MaxLength,
     MinLength,
+    ValidateIf,
 } from 'class-validator';
+import { IsNull } from 'typeorm';
 
 export class ContactPaginateDto extends PageOptionsDto {
     @ApiProperty({
@@ -51,6 +52,7 @@ export class ContactCreateDto {
     })
     @IsOptional()
     @IsNumber()
+    @ValidateIf((object, value) => value !== null)
     group_id: number;
 
     @ApiProperty({
@@ -83,6 +85,7 @@ export class ContactUpdateDto {
     })
     @IsOptional()
     @IsNumber()
+    @ValidateIf((object, value) => value !== null)
     group_id: number;
 
     @ApiProperty({

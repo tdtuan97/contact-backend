@@ -149,7 +149,7 @@ export class ContactService {
         }
 
         let item = await this.contactRepository.save({
-            group_id: dto.group_id,
+            group_id: dto.group_id ?? null,
             name: dto.name,
             phone_number: dto.phone_number,
             email: dto.email,
@@ -185,10 +185,10 @@ export class ContactService {
     ): Promise<ContactResponse> {
         let item = await this.findById(userId, id);
 
-        if (dto.group_id !== item.group_id) {
+        if (dto.group_id && dto.group_id !== item.group_id) {
             let checkGroup = await this.findGroupById(userId, dto.group_id);
 
-            if (checkGroup) {
+            if (!checkGroup) {
                 throw new ApiValidationException(
                     'id',
                     `Group ID [${dto.group_id}] not found`,
@@ -205,7 +205,7 @@ export class ContactService {
         }
 
         item.name = dto.name;
-        item.group_id = dto.group_id;
+        item.group_id = dto.group_id ?? null;
         item.name = dto.name;
         item.phone_number = dto.phone_number;
         item.email = dto.email;

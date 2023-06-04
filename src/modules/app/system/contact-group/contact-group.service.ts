@@ -9,6 +9,7 @@ import {
     ContactGroupPaginateDto,
     ContactGroupUpdateDto,
 } from '@/modules/app/system/contact-group/contact-group.dto';
+import * as console from 'console';
 
 @Injectable()
 export class ContactGroupService {
@@ -27,7 +28,7 @@ export class ContactGroupService {
         userId: number,
         params: ContactGroupPaginateDto,
     ): Promise<[ContactGroupResponse[], number]> {
-        const { name, limit, page } = params;
+        const { name, limit, page, all } = params;
         let result: ContactGroupResponse[] = [];
 
         let builder = this.contactGroupRepository
@@ -42,10 +43,11 @@ export class ContactGroupService {
             });
         }
 
-        builder = builder
-            .orderBy('name', 'ASC')
-            .offset((page - 1) * limit)
-            .limit(limit);
+        builder = builder.orderBy('name', 'ASC');
+
+        if (all !== '1') {
+            builder = builder.offset((page - 1) * limit).limit(limit);
+        }
 
         const total = await builder.getCount();
         const list: TblContactGroup[] = await builder.getRawMany();
