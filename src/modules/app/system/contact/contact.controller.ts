@@ -18,7 +18,7 @@ import {
 } from '@/modules/app/system/contact/contact.class';
 import {
     ContactCreateDto,
-    ContactPaginateDto,
+    ContactPaginateDto, ContactShareDto,
     ContactUpdateDto,
 } from '@/modules/app/system/contact/contact.dto';
 import { ContactService } from '@/modules/app/system/contact/contact.service';
@@ -94,5 +94,17 @@ export class ContactController {
         @AuthUser() user: IAuthUser,
     ): Promise<void> {
         await this.contactService.delete(user.uid, params.id);
+    }
+
+    @ApiOperation({
+        summary: 'Share',
+    })
+    @Post(':id/share')
+    async share(
+        @Body() dto: ContactShareDto,
+        @Param() params: any,
+        @AuthUser() user: IAuthUser,
+    ): Promise<void> {
+        await this.contactService.share(user.uid, params.id, dto);
     }
 }

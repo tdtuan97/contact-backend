@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import TblUser from '@/entities/core/tbl-user.entity';
+import {PaginatedResponseDto} from "@/common/class/res.class";
 
 export class AccountInfo {
     @ApiProperty()
@@ -27,91 +27,30 @@ export class AccountInfo {
     login_ip: string;
 }
 
-export class PageSearchUserInfo {
-    @ApiProperty()
-    createdAt: string;
-
-    @ApiProperty()
-    departmentId: number;
-
-    @ApiProperty()
-    email: string;
-
-    @ApiProperty()
-    headImg: string;
-
-    @ApiProperty()
+export class UserResponse {
+    @ApiProperty({ description: 'User ID' })
     id: number;
 
-    @ApiProperty()
-    name: string;
-
-    @ApiProperty()
-    nickName: string;
-
-    @ApiProperty()
-    phone: string;
-
-    @ApiProperty()
-    remark: string;
-
-    @ApiProperty()
-    status: number;
-
-    @ApiProperty()
-    updatedAt: string;
-
-    @ApiProperty()
+    @ApiProperty({ description: 'User name' })
     username: string;
 
-    @ApiProperty()
-    departmentName: string;
+    @ApiProperty({ description: 'First name' })
+    first_name: string;
 
-    @ApiProperty({
-        type: [String],
-    })
-    roleNames: string[];
+    @ApiProperty({ description: 'Last name' })
+    last_name: string;
+
+    @ApiProperty({ description: 'Full name' })
+    full_name: string;
+
+    @ApiProperty({ description: 'Email' })
+    email: string;
+
+    @ApiProperty({ description: 'Created date' })
+    created_at: Date;
+
+    @ApiProperty({ description: 'Updated date' })
+    updated_at: Date;
 }
 
-export class UserDetailInfo extends TblUser {
-    @ApiProperty({
-        description: 'Association role',
-    })
-    roles: number[];
-
-    @ApiProperty({
-        description: 'Related department name',
-    })
-    departmentName: string;
-}
-
-export class AddUserCarModelResponse {
-    @ApiProperty({ description: 'Car model ID' })
-    id: number;
-}
-
-export class UserCarModelResponse {
-    @ApiProperty({ description: 'Car model ID' })
-    id: string;
-
-    @ApiProperty({ description: 'Car model name' })
-    name: string;
-
-    @ApiProperty({ description: 'Car model image URL' })
-    image_url: string;
-
-    @ApiProperty({ description: 'Car model release date' })
-    release_date: number;
-
-    @ApiProperty({ description: 'Car series ID' })
-    series_id: number;
-
-    @ApiProperty({ description: 'Car series name' })
-    series_name: string;
-
-    @ApiProperty({ description: 'Car brand ID' })
-    brand_id: number;
-
-    @ApiProperty({ description: 'Car brand name' })
-    brand_name: string;
-}
+export class UserPaginateResponse extends PaginatedResponseDto<UserResponse> {}

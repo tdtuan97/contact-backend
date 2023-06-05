@@ -19,6 +19,14 @@ export class ContactGroupPaginateDto extends PageOptionsDto {
     name = '';
 
     @ApiProperty({
+        description: 'Contact description',
+    })
+    @IsOptional()
+    @IsString()
+    @MaxLength(255)
+    description = '';
+
+    @ApiProperty({
         description: 'Is Get ALL',
     })
     @IsOptional()

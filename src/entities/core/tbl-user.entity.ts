@@ -7,6 +7,8 @@ import {BaseEntity} from '../base.entity';
 
 @Entity({name: 'tbl_user'})
 export default class TblUser extends BaseEntity {
+    public static tableName: string = 'tbl_user';
+
     @PrimaryGeneratedColumn()
     id: number;
 

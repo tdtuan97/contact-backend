@@ -4,17 +4,28 @@ import {
     Entity,
 } from 'typeorm';
 import { BaseEntity } from '../base.entity';
+import {BaseTimestampEntity} from "@/entities/base-timestamp.entity";
+
+export enum ShareMode {
+    READ = 'read',
+}
 
 @Entity({ name: 'tbl_contact_sharing' })
-export default class TblContactSharing extends BaseEntity {
+export default class TblContactSharing extends BaseTimestampEntity {
     public static tableName: string = 'tbl_contact_sharing';
 
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ unique: true })
-    name: string;
+    @Column()
+    user_id: number;
 
-    @Column({ nullable: true })
-    description: string;
+    @Column()
+    contact_id: number;
+
+    @Column({
+        type: 'enum',
+        enum: ShareMode,
+    })
+    mode: string;
 }

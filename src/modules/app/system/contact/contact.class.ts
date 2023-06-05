@@ -23,7 +23,7 @@ export class ContactResponse {
     email: string;
 
     @ApiProperty({ description: 'Create user' })
-    created_user: number;
+    created_user_id: number;
 
     @ApiProperty({ description: 'Created date' })
     created_at: Date;

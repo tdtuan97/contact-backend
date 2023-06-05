@@ -8,15 +8,16 @@ import {
     MinLength,
     ValidateIf,
 } from 'class-validator';
-import { IsNull } from 'typeorm';
 
 export class ContactPaginateDto extends PageOptionsDto {
     @ApiProperty({
         description: 'Contact Group ID',
     })
     @IsOptional()
-    @IsNumber()
-    group_id: number;
+    @IsString()
+    @MinLength(1)
+    @MaxLength(255)
+    group_id: string;
 
     @ApiProperty({
         description: 'Contact name',
@@ -111,4 +112,14 @@ export class ContactUpdateDto {
     @MinLength(1)
     @MaxLength(255)
     email: string;
+}
+
+export class ContactShareDto {
+    @ApiProperty({
+        description: 'User ID',
+    })
+    @IsString()
+    @MinLength(1)
+    @MaxLength(255)
+    user_id: string;
 }

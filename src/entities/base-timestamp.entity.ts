@@ -12,8 +12,8 @@ export abstract class BaseTimestampEntity extends BaseCommonEntity {
     updated_at: Date;
 
     @Column()
-    created_user: string;
+    created_user_id: number;
 
     @Column()
-    updated_user: string;
+    updated_user_id: number;
 }

@@ -40,7 +40,7 @@ export class AuthService {
         if (isEmpty(user)) {
             throw new ApiValidationException(
                 'email',
-                `Not found email [${email}]`,
+                'Not found email',
             );
         }
 

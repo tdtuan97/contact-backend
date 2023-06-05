@@ -1,16 +1,17 @@
-import { ApiValidationException } from '@/common/exceptions/api-validation.exception';
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import {ApiValidationException} from '@/common/exceptions/api-validation.exception';
+import {Injectable} from '@nestjs/common';
+import {InjectRepository} from '@nestjs/typeorm';
+import {In, Repository} from 'typeorm';
 import TblContact from '@/entities/core/tbl-contact.entity';
 import TblContactGroup from '@/entities/core/tbl-contact-group.entity';
 import {
     ContactCreateDto,
-    ContactPaginateDto,
+    ContactPaginateDto, ContactShareDto,
     ContactUpdateDto,
 } from '@/modules/app/system/contact/contact.dto';
-import { ContactResponse } from '@/modules/app/system/contact/contact.class';
+import {ContactResponse} from '@/modules/app/system/contact/contact.class';
 import * as console from 'console';
+import TblContactSharing, {ShareMode} from "@/entities/core/tbl-contact-sharing.entity";
 
 @Injectable()
 export class ContactService {
@@ -19,7 +20,10 @@ export class ContactService {
         private contactGroupRepository: Repository<TblContactGroup>,
         @InjectRepository(TblContact)
         private contactRepository: Repository<TblContact>,
-    ) {}
+        @InjectRepository(TblContactSharing)
+        private contactSharingRepository: Repository<TblContactSharing>,
+    ) {
+    }
 
     /**
      * Paginate
@@ -31,14 +35,23 @@ export class ContactService {
         userId: number,
         params: ContactPaginateDto,
     ): Promise<[ContactResponse[], number]> {
-        const { name, limit, page } = params;
+        const {
+            limit,
+            page,
+            name,
+            phone_number,
+            email,
+            group_id,
+            sort_by,
+            order_by,
+        } = params;
         let result: ContactResponse[] = [];
 
         let builder = this.contactRepository
             .createQueryBuilder(TblContact.tableName)
             .select('*')
             .where(TblContact.queryStrAvailable())
-            .andWhere(`created_user = ${userId}`);
+            .andWhere(`created_user_id = ${userId}`);
 
         if (name) {
             builder = builder.andWhere('name like :name', {
@@ -46,8 +59,53 @@ export class ContactService {
             });
         }
 
+        if (phone_number) {
+            builder = builder.andWhere('phone_number like :phone_number', {
+                phone_number: `%${phone_number}%`,
+            });
+        }
+
+        if (email) {
+            builder = builder.andWhere('email like :email', {
+                email: `%${email}%`,
+            });
+        }
+
+        if (group_id) {
+            let groupIds = group_id.split(',');
+            if (groupIds.length > 0) {
+                builder = builder.andWhere('group_id IN (:...groupIds)', {
+                    groupIds: groupIds,
+                });
+            }
+        }
+
+        let orderBy;
+        let sortBy;
+        switch (sort_by) {
+            case 'id':
+            case 'name':
+            case 'email':
+            case 'phone_number':
+            case 'created_at':
+            case 'updated_at':
+                sortBy = sort_by;
+                break;
+            default:
+                sortBy = 'id';
+                break;
+        }
+        switch (order_by) {
+            case 'ASC':
+            case 'DESC':
+                orderBy = order_by;
+                break;
+            default:
+                orderBy = 'DESC';
+        }
+
         builder = builder
-            .orderBy('name', 'ASC')
+            .orderBy(sortBy, orderBy)
             .offset((page - 1) * limit)
             .limit(limit);
 
@@ -80,7 +138,7 @@ export class ContactService {
                 name: item.name,
                 phone_number: item.phone_number,
                 email: item.email,
-                created_user: item.created_user,
+                created_user_id: item.created_user_id,
                 created_at: item.created_at,
                 updated_at: item.updated_at,
             });
@@ -116,7 +174,7 @@ export class ContactService {
             name: item.name,
             phone_number: item.phone_number,
             email: item.email,
-            created_user: item.created_user,
+            created_user_id: item.created_user_id,
             created_at: item.created_at,
             updated_at: item.updated_at,
         };
@@ -155,7 +213,7 @@ export class ContactService {
             email: dto.email,
             is_deleted: TblContactGroup.NOT_DELETED,
             is_active: TblContactGroup.IS_ACTIVE,
-            created_user: userId,
+            created_user_id: userId,
         });
 
         return {
@@ -165,7 +223,7 @@ export class ContactService {
             name: item.name,
             phone_number: item.phone_number,
             email: item.email,
-            created_user: item.created_user,
+            created_user_id: item.created_user_id,
             created_at: item.created_at,
             updated_at: item.updated_at,
         };
@@ -222,7 +280,7 @@ export class ContactService {
             name: item.name,
             phone_number: item.phone_number,
             email: item.email,
-            created_user: item.created_user,
+            created_user_id: item.created_user_id,
             created_at: item.created_at,
             updated_at: item.updated_at,
         };
@@ -256,7 +314,7 @@ export class ContactService {
         let check = await this.contactRepository.findOne({
             where: {
                 phone_number: phoneNumber,
-                created_user: userId,
+                created_user_id: userId,
                 ...TblContact.queryAvailable(),
             },
         });
@@ -278,7 +336,7 @@ export class ContactService {
         let check = await this.contactRepository.findOne({
             where: {
                 email: email,
-                created_user: userId,
+                created_user_id: userId,
                 ...TblContact.queryAvailable(),
             },
         });
@@ -297,7 +355,7 @@ export class ContactService {
         let item = await this.contactRepository.findOne({
             where: {
                 id: id,
-                created_user: userId,
+                created_user_id: userId,
                 ...TblContact.queryAvailable(),
             },
         });
@@ -321,9 +379,59 @@ export class ContactService {
         return await this.contactGroupRepository.findOne({
             where: {
                 id: id,
-                created_user: userId,
+                created_user_id: userId,
                 ...TblContact.queryAvailable(),
             },
         });
+    }
+
+    /**
+     * Update
+     * @param userId
+     * @param contactId
+     * @param dto
+     * @returns
+     */
+    async share(
+        userId: number,
+        contactId: number,
+        dto: ContactShareDto,
+    ): Promise<void> {
+        await this.findById(userId, contactId);
+
+        let shareUserIds = [];
+        if (dto.user_id) {
+            shareUserIds = dto.user_id.split(',');
+            shareUserIds = shareUserIds.filter((tmpId) => {
+                tmpId = parseInt(tmpId);
+                return !isNaN(tmpId) && tmpId !== userId
+            })
+            shareUserIds = shareUserIds.filter(function (value, index, array) {
+                return array.indexOf(value) === index;
+            });
+        }
+
+        // Remove all sharing user
+        await this.contactSharingRepository.delete({
+            contact_id: contactId
+        })
+
+        // Sharing current user
+        if (shareUserIds.length > 0){
+            let dataInsert = shareUserIds.map((tmpId) => {
+                return {
+                    user_id: tmpId,
+                    contact_id: contactId,
+                    mode: ShareMode.READ,
+                    created_user_id: userId,
+                }
+            })
+            await this.contactSharingRepository
+                .createQueryBuilder()
+                .insert()
+                .values(dataInsert)
+                .execute()
+        }
+
     }
 }

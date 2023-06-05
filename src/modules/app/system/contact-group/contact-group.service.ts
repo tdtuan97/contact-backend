@@ -1,9 +1,9 @@
-import { ApiValidationException } from '@/common/exceptions/api-validation.exception';
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import {ApiValidationException} from '@/common/exceptions/api-validation.exception';
+import {Injectable} from '@nestjs/common';
+import {InjectRepository} from '@nestjs/typeorm';
+import {Repository} from 'typeorm';
 import TblContactGroup from '@/entities/core/tbl-contact-group.entity';
-import { ContactGroupResponse } from '@/modules/app/system/contact-group/contact-group.class';
+import {ContactGroupResponse} from '@/modules/app/system/contact-group/contact-group.class';
 import {
     ContactGroupCreateDto,
     ContactGroupPaginateDto,
@@ -16,7 +16,8 @@ export class ContactGroupService {
     constructor(
         @InjectRepository(TblContactGroup)
         private contactGroupRepository: Repository<TblContactGroup>,
-    ) {}
+    ) {
+    }
 
     /**
      * Paginate
@@ -28,18 +29,30 @@ export class ContactGroupService {
         userId: number,
         params: ContactGroupPaginateDto,
     ): Promise<[ContactGroupResponse[], number]> {
-        const { name, limit, page, all } = params;
+        const {
+            name,
+            description,
+            limit,
+            page,
+            all
+        } = params;
         let result: ContactGroupResponse[] = [];
 
         let builder = this.contactGroupRepository
             .createQueryBuilder(TblContactGroup.tableName)
             .select('*')
             .where(TblContactGroup.queryStrAvailable())
-            .andWhere(`created_user = ${userId}`);
+            .andWhere(`created_user_id = ${userId}`);
 
         if (name) {
             builder = builder.andWhere('name like :name', {
                 name: `%${name}%`,
+            });
+        }
+
+        if (description) {
+            builder = builder.andWhere('description like :description', {
+                description: `%${description}%`,
             });
         }
 
@@ -57,7 +70,7 @@ export class ContactGroupService {
                 id: item.id,
                 name: item.name,
                 description: item.description,
-                created_user: item.created_user,
+                created_user_id: item.created_user_id,
                 created_at: item.created_at,
                 updated_at: item.updated_at,
             });
@@ -79,7 +92,7 @@ export class ContactGroupService {
             id: item.id,
             name: item.name,
             description: item.description,
-            created_user: item.created_user,
+            created_user_id: item.created_user_id,
             created_at: item.created_at,
             updated_at: item.updated_at,
         };
@@ -102,14 +115,14 @@ export class ContactGroupService {
             description: dto.description,
             is_deleted: TblContactGroup.NOT_DELETED,
             is_active: TblContactGroup.IS_ACTIVE,
-            created_user: userId,
+            created_user_id: userId,
         });
 
         return {
             id: item.id,
             name: item.name,
             description: item.description,
-            created_user: item.created_user,
+            created_user_id: item.created_user_id,
             created_at: item.created_at,
             updated_at: item.updated_at,
         };
@@ -141,7 +154,7 @@ export class ContactGroupService {
             id: item.id,
             name: item.name,
             description: item.description,
-            created_user: item.created_user,
+            created_user_id: item.created_user_id,
             created_at: item.created_at,
             updated_at: item.updated_at,
         };
@@ -175,7 +188,7 @@ export class ContactGroupService {
         let check = await this.contactGroupRepository.findOne({
             where: {
                 name: name,
-                created_user: userId,
+                created_user_id: userId,
                 ...TblContactGroup.queryAvailable(),
             },
         });
@@ -197,7 +210,7 @@ export class ContactGroupService {
         let item = await this.contactGroupRepository.findOne({
             where: {
                 id: id,
-                created_user: userId,
+                created_user_id: userId,
                 ...TblContactGroup.queryAvailable(),
             },
         });

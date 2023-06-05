@@ -1,15 +1,16 @@
-import { HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { camelCase, isEmpty } from 'lodash';
-import { ApiException } from 'src/common/exceptions/api.exception';
-import { UtilService } from 'src/shared/services/util.service';
-import { EntityManager, In, Not, Repository } from 'typeorm';
-import { RedisService } from 'src/shared/services/redis.service';
-import { AccountInfo } from './user.class';
-import { UpdatePasswordDto, UpdateUserInfoDto } from './user.dto';
+import {HttpStatus, Inject, Injectable} from '@nestjs/common';
+import {InjectEntityManager, InjectRepository} from '@nestjs/typeorm';
+import {camelCase, isEmpty} from 'lodash';
+import {ApiException} from 'src/common/exceptions/api.exception';
+import {UtilService} from 'src/shared/services/util.service';
+import {Brackets, EntityManager, In, Not, Repository} from 'typeorm';
+import {RedisService} from 'src/shared/services/redis.service';
+import {AccountInfo, UserResponse} from './user.class';
+import {UpdatePasswordDto, UpdateUserInfoDto, UserPaginateDto} from './user.dto';
 import TblUser from '@/entities/core/tbl-user.entity';
-import { ApiValidationException } from '@/common/exceptions/api-validation.exception';
-import { RegisterDto } from '@/modules/app/auth/auth.dto';
+import {ApiValidationException} from '@/common/exceptions/api-validation.exception';
+import {RegisterDto} from '@/modules/app/auth/auth.dto';
+import * as console from "console";
 
 @Injectable()
 export class UserService {
@@ -19,7 +20,71 @@ export class UserService {
         private redisService: RedisService,
         @InjectEntityManager() private entityManager: EntityManager,
         private util: UtilService,
-    ) {}
+    ) {
+    }
+
+    /**
+     * Paginate
+     * @param userId
+     * @param params
+     * @returns
+     */
+    async paginate(
+        userId: number,
+        params: UserPaginateDto,
+    ): Promise<[UserResponse[], number]> {
+        const {
+            limit,
+            page,
+            all,
+            keyword,
+        } = params;
+        let result: UserResponse[] = [];
+
+        let builder = this.userRepository
+            .createQueryBuilder(TblUser.tableName)
+            .select('*')
+            .where(TblUser.queryStrAvailable())
+            .andWhere(`id != ${userId}`)
+
+        if (keyword) {
+            builder = builder.andWhere(
+                new Brackets((qb) => {
+                    qb.orWhere('username LIKE :username', {
+                        username: `%${keyword}%`,
+                    });
+                    qb.orWhere('email LIKE :email', {
+                        email: `%${keyword}%`,
+                    });
+                }),
+            );
+        }
+
+        builder = builder.orderBy('email', 'ASC');
+
+        if (all !== '1') {
+            builder = builder.offset((page - 1) * limit).limit(limit);
+        }
+
+        const total = await builder.getCount();
+        const list: TblUser[] = await builder.getRawMany();
+
+        list.map((item) => {
+            result.push({
+                id: item.id,
+                username: item.username,
+                first_name: item.first_name,
+                last_name: item.last_name,
+                email: item.email,
+                full_name: item.first_name + ' ' + item.last_name,
+                created_at: item.created_at,
+                updated_at: item.updated_at,
+            });
+        });
+
+
+        return [result, total];
+    }
 
     /**
      * Find enabled users by username
@@ -68,29 +133,29 @@ export class UserService {
             'base64',
         ).toString('utf-8');
 
-        let exists = await this.userRepository.findOne({
-            where: { username: username },
-        });
-        if (!isEmpty(exists)) {
-            throw new ApiValidationException(
-                'username',
-                `The username [${username}] already exists`,
-            );
-        }
-
         // Check duplicate email
-        exists = await this.userRepository.findOne({
-            where: { email: registerDto.email },
+        let exists = await this.userRepository.findOne({
+            where: {email: registerDto.email},
         });
         if (!isEmpty(exists)) {
             throw new ApiValidationException(
                 'email',
-                `The email [${registerDto.email}] already exists`,
+                'The email already exists',
+            );
+        }
+
+        exists = await this.userRepository.findOne({
+            where: {username: username},
+        });
+        if (!isEmpty(exists)) {
+            throw new ApiValidationException(
+                'username',
+                'The username already exists',
             );
         }
 
         // Encrypt password
-        const { hash, salt } = this.util.bcryptHash(password);
+        const {hash, salt} = this.util.bcryptHash(password);
 
         // Run transaction
         let result = null;
@@ -153,7 +218,7 @@ export class UserService {
      * change user password
      */
     async updatePassword(uid: number, dto: UpdatePasswordDto): Promise<void> {
-        const user = await this.userRepository.findOne({ where: { id: uid } });
+        const user = await this.userRepository.findOne({where: {id: uid}});
         if (isEmpty(user)) {
             throw new ApiException(10017, HttpStatus.UNAUTHORIZED);
         }
@@ -164,11 +229,11 @@ export class UserService {
         if (user.password !== comparePassword) {
             throw new ApiValidationException(
                 'current_password',
-                `The current password incorrect`,
+                'The current password incorrect',
             );
         }
         const password = this.util.md5(`${dto.new_password}${user.salt}`);
-        await this.userRepository.update({ id: uid }, { password });
+        await this.userRepository.update({id: uid}, {password});
         await this.upgradePasswordV(user.id);
     }
 
@@ -179,13 +244,13 @@ export class UserService {
     async info(
         id: number,
     ): Promise<TblUser & { roles: number[]; departmentName: string }> {
-        const user: any = await this.userRepository.findOne({ where: { id } });
+        const user: any = await this.userRepository.findOne({where: {id}});
         if (isEmpty(user)) {
             throw new ApiException(10017);
         }
 
         delete user.password;
-        return { ...user };
+        return {...user};
     }
 
     /**
@@ -207,7 +272,7 @@ export class UserService {
         const rootUserId = await this.findRootUserId();
         if (queryAll) {
             return await this.userRepository.count({
-                where: { id: Not(In([rootUserId, uid])) },
+                where: {id: Not(In([rootUserId, uid]))},
             });
         }
         return await this.userRepository.count({
