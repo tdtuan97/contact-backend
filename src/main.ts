@@ -4,12 +4,15 @@ import {
     FastifyAdapter,
     NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import multipart from "@fastify/multipart";
+
 import { ValidationError } from 'class-validator';
 import { AppModule } from './app.module';
 import { ApiExceptionFilter } from './common/filters/api-exception.filter';
 import { ApiTransformInterceptor } from './common/interceptors/api-transform.interceptor';
 import { setupSwagger } from './setup-swagger';
 import { LoggerService } from './shared/logger/logger.service';
+import path from "path";
 
 const SERVER_PORT = process.env.SERVER_PORT;
 const PREFIX = process.env.PREFIX ?? '';
@@ -27,6 +30,7 @@ async function bootstrap() {
     app.setGlobalPrefix(PREFIX);
     // custom logger
     app.useLogger(app.get(LoggerService));
+
     // validate
     app.useGlobalPipes(
         new ValidationPipe({
@@ -53,6 +57,8 @@ async function bootstrap() {
 
     // api interceptor
     app.useGlobalInterceptors(new ApiTransformInterceptor(new Reflector()));
+
+    await app.register(multipart);
 
     // swagger
     setupSwagger(app);

@@ -25,13 +25,6 @@ export class ContactGroupPaginateDto extends PageOptionsDto {
     @IsString()
     @MaxLength(255)
     description = '';
-
-    @ApiProperty({
-        description: 'Is Get ALL',
-    })
-    @IsOptional()
-    @IsEnum(['0', '1'])
-    all: '0' | '1';
 }
 
 export class ContactGroupCreateDto {

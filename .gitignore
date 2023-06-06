@@ -47,3 +47,7 @@ docs/sample/mysql/
 
 # Dev data
 /__data/
+
+/public/export/*.csv
+/public/import/*.csv
+/public/*.csv

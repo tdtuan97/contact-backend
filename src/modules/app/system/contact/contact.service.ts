@@ -1,5 +1,5 @@
 import {ApiValidationException} from '@/common/exceptions/api-validation.exception';
-import {Injectable} from '@nestjs/common';
+import {Injectable, Logger} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
 import {Brackets, In, Repository} from 'typeorm';
 import TblContact, {PublicStatus} from '@/entities/core/tbl-contact.entity';
@@ -50,6 +50,7 @@ export class ContactService {
             group_id,
             sort_by,
             order_by,
+            all,
         } = params;
         let result: ContactResponse[] = [];
 
@@ -58,7 +59,7 @@ export class ContactService {
             .select('*')
             .where(TblContact.queryStrAvailable());
 
-        if (parseInt(is_public) === PublicStatus.PUBLIC || parseInt(is_public) === PublicStatus.PRIVATE){
+        if (parseInt(is_public) === PublicStatus.PUBLIC || parseInt(is_public) === PublicStatus.PRIVATE) {
             builder = builder.andWhere(`is_public = ${is_public}`);
         }
 
@@ -140,10 +141,10 @@ export class ContactService {
                 orderBy = 'DESC';
         }
 
-        builder = builder
-            .orderBy(sortBy, orderBy)
-            .offset((page - 1) * limit)
-            .limit(limit);
+        builder = builder.orderBy(sortBy, orderBy)
+        if (all !== '1') {
+            builder = builder.offset((page - 1) * limit).limit(limit);
+        }
 
         const total = await builder.getCount();
         const list: TblContact[] = await builder.getRawMany();
@@ -433,15 +434,6 @@ export class ContactService {
      * @param id
      */
     async findById(userId, id): Promise<TblContact> {
-        /*let item = await this.contactRepository.findOne({
-            where: {
-                id: id,
-                created_user_id: userId,
-                ...TblContact.queryAvailable(),
-            },
-        });
-        */
-
         let builder = this.contactRepository
             .createQueryBuilder(TblContact.tableName)
             .select('*')
@@ -551,5 +543,50 @@ export class ContactService {
                 .values(dataInsert)
                 .execute()
         }
+    }
+
+    async imports(userId, data) {
+        let results = [];
+
+        // Validate data
+        let rows = [];
+        data.map((item) => {
+            rows.push(item)
+        })
+
+        let chunks = this.chunks(rows, 5);
+        for (const contacts of chunks) {
+            try {
+                let dataInsert = contacts.map((row) => {
+                    return {
+                        name: row.name,
+                        phone_number: row.phone_number,
+                        email: row.email,
+                        is_public: row.is_public,
+                        created_user_id: userId,
+                        is_deleted: TblContactGroup.NOT_DELETED,
+                        is_active: TblContactGroup.IS_ACTIVE,
+                    }
+                })
+                let resultInsert = await this.contactRepository
+                    .createQueryBuilder()
+                    .insert()
+                    .values(dataInsert)
+                    .execute()
+
+                console.log(resultInsert.generatedMaps)
+            } catch (e) {
+                Logger.error(`Import chunk error`, e)
+            }
+        }
+    }
+
+    chunks(array, chunkSize) {
+        const result = [];
+        for (let i = 0; i < array.length; i += chunkSize) {
+            const chunk = array.slice(i, i + chunkSize);
+            result.push(chunk);
+        }
+        return result;
     }
 }

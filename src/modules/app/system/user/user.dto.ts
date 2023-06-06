@@ -70,11 +70,4 @@ export class UserPaginateDto extends PageOptionsDto {
     @IsString()
     @MaxLength(255)
     keyword = '';
-
-    @ApiProperty({
-        description: 'Is Get ALL',
-    })
-    @IsOptional()
-    @IsEnum(['0', '1'])
-    all: '0' | '1';
 }

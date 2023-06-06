@@ -12,6 +12,10 @@ import {ContactController} from "@/modules/app/system/contact/contact.controller
 import {ContactService} from "@/modules/app/system/contact/contact.service";
 import {ContactGroupService} from "@/modules/app/system/contact-group/contact-group.service";
 import {ContactGroupController} from "@/modules/app/system/contact-group/contact-group.controller";
+import {ExportController} from "@/modules/app/system/export/export.controller";
+import {ExportService} from "@/modules/app/system/export/export.service";
+import {ImportController} from "@/modules/app/system/import/import.controller";
+import {ImportService} from "@/modules/app/system/import/import.service";
 
 @Module({
     imports: [
@@ -22,6 +26,8 @@ import {ContactGroupController} from "@/modules/app/system/contact-group/contact
         UserController,
         ContactController,
         ContactGroupController,
+        ExportController,
+        ImportController,
     ],
     providers: [
         rootRoleIdProvider(),
@@ -29,6 +35,8 @@ import {ContactGroupController} from "@/modules/app/system/contact-group/contact
         // Core services
         ContactService,
         ContactGroupService,
+        ExportService,
+        ImportService,
         UserService,
     ],
     exports: [

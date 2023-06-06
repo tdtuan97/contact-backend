@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {IsInt, IsString, Min} from 'class-validator';
+import {IsEnum, IsInt, IsOptional, IsString, Min} from 'class-validator';
 
 export class PageOptionsDto {
     @ApiProperty({
@@ -40,4 +40,11 @@ export class PageOptionsDto {
     @Type(() => String)
     @IsString()
     readonly order_by: string = 'DESC';
+
+    @ApiProperty({
+        description: 'Is Get ALL',
+    })
+    @IsOptional()
+    @IsEnum(['0', '1'])
+    all: '0' | '1';
 }
