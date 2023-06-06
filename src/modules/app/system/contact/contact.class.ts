@@ -22,8 +22,20 @@ export class ContactResponse {
     @ApiProperty({ description: 'Contact Email' })
     email: string;
 
-    @ApiProperty({ description: 'Create user' })
+    @ApiProperty({ description: 'Public status' })
+    is_public: number;
+
+    @ApiProperty({ description: 'Allow edit' })
+    allow_edit: boolean
+
+    @ApiProperty({ description: 'Create user ID' })
     created_user_id: number;
+
+    @ApiProperty({ description: 'Create user Email' })
+    created_user_email: string
+
+    @ApiProperty({ description: 'Create username' })
+    created_user_name: string
 
     @ApiProperty({ description: 'Created date' })
     created_at: Date;

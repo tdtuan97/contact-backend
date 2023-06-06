@@ -1,21 +1,25 @@
 import {ApiValidationException} from '@/common/exceptions/api-validation.exception';
 import {Injectable} from '@nestjs/common';
 import {InjectRepository} from '@nestjs/typeorm';
-import {In, Repository} from 'typeorm';
-import TblContact from '@/entities/core/tbl-contact.entity';
+import {Brackets, In, Repository} from 'typeorm';
+import TblContact, {PublicStatus} from '@/entities/core/tbl-contact.entity';
 import TblContactGroup from '@/entities/core/tbl-contact-group.entity';
 import {
     ContactCreateDto,
-    ContactPaginateDto, ContactShareDto,
+    ContactPaginateDto,
+    ContactShareDto,
     ContactUpdateDto,
 } from '@/modules/app/system/contact/contact.dto';
 import {ContactResponse} from '@/modules/app/system/contact/contact.class';
-import * as console from 'console';
 import TblContactSharing, {ShareMode} from "@/entities/core/tbl-contact-sharing.entity";
+import TblUser from "@/entities/core/tbl-user.entity";
+import * as console from "console";
 
 @Injectable()
 export class ContactService {
     constructor(
+        @InjectRepository(TblUser)
+        private userRepository: Repository<TblUser>,
         @InjectRepository(TblContactGroup)
         private contactGroupRepository: Repository<TblContactGroup>,
         @InjectRepository(TblContact)
@@ -41,6 +45,8 @@ export class ContactService {
             name,
             phone_number,
             email,
+            is_public,
+            type,
             group_id,
             sort_by,
             order_by,
@@ -50,8 +56,38 @@ export class ContactService {
         let builder = this.contactRepository
             .createQueryBuilder(TblContact.tableName)
             .select('*')
-            .where(TblContact.queryStrAvailable())
-            .andWhere(`created_user_id = ${userId}`);
+            .where(TblContact.queryStrAvailable());
+
+        if (parseInt(is_public) === PublicStatus.PUBLIC || parseInt(is_public) === PublicStatus.PRIVATE){
+            builder = builder.andWhere(`is_public = ${is_public}`);
+        }
+
+        switch (type) {
+            case "me":
+                builder = builder.andWhere(
+                    new Brackets((qb) => {
+                        qb.andWhere(`created_user_id = ${userId}`);
+                    }),
+                );
+                break;
+            case "shared":
+                builder = builder.andWhere(
+                    new Brackets((qb) => {
+                        qb.andWhere(`created_user_id <> ${userId}`);
+                        qb.andWhere(`is_public = ${PublicStatus.PUBLIC}`);
+                    }),
+                );
+                break;
+            case "all":
+            default:
+                builder = builder.andWhere(
+                    new Brackets((qb) => {
+                        qb.andWhere(`created_user_id = ${userId}`);
+                        qb.orWhere(`is_public = ${PublicStatus.PUBLIC}`);
+                    }),
+                );
+                break;
+        }
 
         if (name) {
             builder = builder.andWhere('name like :name', {
@@ -112,9 +148,12 @@ export class ContactService {
         const total = await builder.getCount();
         const list: TblContact[] = await builder.getRawMany();
 
-        // Map group
-        let groupIds = list.map((item) => {
-            return item.group_id;
+        // Map relations data
+        let groupIds = [];
+        let userIds = [];
+        list.map((item) => {
+            groupIds.push(item.group_id);
+            userIds.push(item.created_user_id);
         });
 
         let groups = [];
@@ -127,10 +166,25 @@ export class ContactService {
             });
         }
 
-        list.map((item) => {
-            let group = groups.find((group) => {
-                return group.id === item.group_id;
+        let users = [];
+        if (userIds) {
+            users = await this.userRepository.find({
+                where: {
+                    id: In(userIds),
+                    ...TblUser.queryAvailable(),
+                },
             });
+        }
+
+        list.map((item) => {
+            let group = groups.find((tmp) => {
+                return tmp.id === item.group_id;
+            });
+
+            let user = users.find((tmp) => {
+                return tmp.id === item.created_user_id;
+            });
+
             result.push({
                 id: item.id,
                 group_id: item.group_id,
@@ -138,7 +192,11 @@ export class ContactService {
                 name: item.name,
                 phone_number: item.phone_number,
                 email: item.email,
+                is_public: item.is_public,
+                allow_edit: item.created_user_id === userId,
                 created_user_id: item.created_user_id,
+                created_user_email: user ? user.email : '',
+                created_user_name: user ? user.username : '',
                 created_at: item.created_at,
                 updated_at: item.updated_at,
             });
@@ -166,6 +224,7 @@ export class ContactService {
             });
             groupName = group.name;
         }
+        let user = await this.getUserByUserId(item.created_user_id)
 
         return {
             id: item.id,
@@ -174,7 +233,11 @@ export class ContactService {
             name: item.name,
             phone_number: item.phone_number,
             email: item.email,
+            is_public: item.is_public,
+            allow_edit: item.created_user_id === userId,
             created_user_id: item.created_user_id,
+            created_user_email: user ? user.email : '',
+            created_user_name: user ? user.username : '',
             created_at: item.created_at,
             updated_at: item.updated_at,
         };
@@ -215,7 +278,7 @@ export class ContactService {
             is_active: TblContactGroup.IS_ACTIVE,
             created_user_id: userId,
         });
-
+        let user = await this.getUserByUserId(item.created_user_id)
         return {
             id: item.id,
             group_id: item.group_id,
@@ -223,7 +286,11 @@ export class ContactService {
             name: item.name,
             phone_number: item.phone_number,
             email: item.email,
+            is_public: item.is_public,
+            allow_edit: item.created_user_id === userId,
             created_user_id: item.created_user_id,
+            created_user_email: user ? user.email : '',
+            created_user_name: user ? user.username : '',
             created_at: item.created_at,
             updated_at: item.updated_at,
         };
@@ -272,6 +339,7 @@ export class ContactService {
 
         let group = await this.findGroupById(userId, item.group_id);
         let groupName = group ? group.name : '';
+        let user = await this.getUserByUserId(item.created_user_id)
 
         return {
             id: item.id,
@@ -280,10 +348,23 @@ export class ContactService {
             name: item.name,
             phone_number: item.phone_number,
             email: item.email,
+            is_public: item.is_public,
+            allow_edit: item.created_user_id === userId,
             created_user_id: item.created_user_id,
+            created_user_email: user ? user.email : "",
+            created_user_name: user ? user.username : '',
             created_at: item.created_at,
             updated_at: item.updated_at,
         };
+    }
+
+    async getUserByUserId(userId): Promise<TblUser> {
+        return await this.userRepository.findOne({
+            where: {
+                id: userId,
+                ...TblUser.queryAvailable(),
+            },
+        });
     }
 
     /**
@@ -352,13 +433,29 @@ export class ContactService {
      * @param id
      */
     async findById(userId, id): Promise<TblContact> {
-        let item = await this.contactRepository.findOne({
+        /*let item = await this.contactRepository.findOne({
             where: {
                 id: id,
                 created_user_id: userId,
                 ...TblContact.queryAvailable(),
             },
         });
+        */
+
+        let builder = this.contactRepository
+            .createQueryBuilder(TblContact.tableName)
+            .select('*')
+            .where(`id = ${id}`)
+            .andWhere(TblContact.queryStrAvailable());
+
+        builder = builder.andWhere(
+            new Brackets((qb) => {
+                qb.andWhere(`created_user_id = ${userId}`);
+                qb.orWhere(`is_public = ${PublicStatus.PUBLIC}`);
+            }),
+        );
+
+        let item = await builder.getRawOne();
 
         if (!item) {
             throw new ApiValidationException(
@@ -383,6 +480,28 @@ export class ContactService {
                 ...TblContact.queryAvailable(),
             },
         });
+    }
+
+    /**
+     * Update public status
+     * @param userId
+     * @param contactId
+     * @param publicStatus
+     */
+    async updatePublicStatus(
+        userId: number,
+        contactId: number,
+        publicStatus: number
+    ): Promise<void> {
+        await this.findById(userId, contactId);
+        await this.contactRepository.update(
+            {
+                id: contactId,
+            },
+            {
+                is_public: publicStatus,
+            },
+        );
     }
 
     /**
@@ -417,7 +536,7 @@ export class ContactService {
         })
 
         // Sharing current user
-        if (shareUserIds.length > 0){
+        if (shareUserIds.length > 0) {
             let dataInsert = shareUserIds.map((tmpId) => {
                 return {
                     user_id: tmpId,
@@ -432,6 +551,5 @@ export class ContactService {
                 .values(dataInsert)
                 .execute()
         }
-
     }
 }

@@ -45,6 +45,20 @@ export class ContactPaginateDto extends PageOptionsDto {
     @MinLength(1)
     @MaxLength(255)
     email: string;
+
+    @ApiProperty({
+        description: 'Is public',
+    })
+    @IsOptional()
+    @IsString()
+    is_public: '0' | '1';
+
+    @ApiProperty({
+        description: 'Type',
+    })
+    @IsOptional()
+    @IsString()
+    type: 'all' | 'me' | 'shared';
 }
 
 export class ContactCreateDto {
@@ -78,6 +92,12 @@ export class ContactCreateDto {
     @MinLength(1)
     @MaxLength(255)
     email: string;
+
+    @ApiProperty({
+        description: 'Is Public',
+    })
+    @IsNumber()
+    is_public: number;
 }
 
 export class ContactUpdateDto {
@@ -112,6 +132,12 @@ export class ContactUpdateDto {
     @MinLength(1)
     @MaxLength(255)
     email: string;
+
+    @ApiProperty({
+        description: 'Is Public',
+    })
+    @IsNumber()
+    is_public: number;
 }
 
 export class ContactShareDto {

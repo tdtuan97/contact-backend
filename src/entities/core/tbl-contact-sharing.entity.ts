@@ -3,7 +3,6 @@ import {
     Column,
     Entity,
 } from 'typeorm';
-import { BaseEntity } from '../base.entity';
 import {BaseTimestampEntity} from "@/entities/base-timestamp.entity";
 
 export enum ShareMode {

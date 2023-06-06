@@ -22,6 +22,7 @@ import {
     ContactUpdateDto,
 } from '@/modules/app/system/contact/contact.dto';
 import { ContactService } from '@/modules/app/system/contact/contact.service';
+import {PublicStatus} from "@/entities/core/tbl-contact.entity";
 
 @ApiTags('Contact')
 @Controller('contacts')
@@ -106,5 +107,27 @@ export class ContactController {
         @AuthUser() user: IAuthUser,
     ): Promise<void> {
         await this.contactService.share(user.uid, params.id, dto);
+    }
+
+    @ApiOperation({
+        summary: 'Public',
+    })
+    @Post(':id/public')
+    async public(
+        @Param() params: any,
+        @AuthUser() user: IAuthUser,
+    ): Promise<void> {
+        await this.contactService.updatePublicStatus(user.uid, params.id, PublicStatus.PUBLIC);
+    }
+
+    @ApiOperation({
+        summary: 'Revoke',
+    })
+    @Post(':id/revoke')
+    async revoke(
+        @Param() params: any,
+        @AuthUser() user: IAuthUser,
+    ): Promise<void> {
+        await this.contactService.updatePublicStatus(user.uid, params.id, PublicStatus.PRIVATE);
     }
 }
