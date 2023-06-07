@@ -23,6 +23,7 @@ import {
 } from '@/modules/app/system/contact/contact.dto';
 import { ContactService } from '@/modules/app/system/contact/contact.service';
 import {PublicStatus} from "@/entities/core/tbl-contact.entity";
+import {Authorize} from "@/modules/app/core/decorators/authorize.decorator";
 
 @ApiTags('Contact')
 @Controller('contacts')
@@ -107,6 +108,19 @@ export class ContactController {
         @AuthUser() user: IAuthUser,
     ): Promise<void> {
         await this.contactService.share(user.uid, params.id, dto);
+    }
+
+    @ApiOperation({
+        summary: 'Shared Public',
+    })
+    @ApiOkResponse({ type: ContactResponse })
+    @Authorize()
+    @Get(':id/shared-public')
+    async sharedPublic(
+        @Param() params: any,
+        @AuthUser() user: IAuthUser,
+    ): Promise<ContactResponse> {
+        return await this.contactService.sharedPublic(params.id);
     }
 
     @ApiOperation({

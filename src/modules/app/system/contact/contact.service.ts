@@ -212,7 +212,7 @@ export class ContactService {
      * @returns
      */
     async detail(userId: number, id: number): Promise<ContactResponse> {
-        let item = await this.findById(userId, id);
+        let item = await this.findByAuthor(userId, id);
         let groupId = item.group_id;
         let groupName = '';
         if (groupId) {
@@ -235,6 +235,43 @@ export class ContactService {
             email: item.email,
             is_public: item.is_public,
             allow_edit: item.created_user_id === userId,
+            created_user_id: item.created_user_id,
+            created_user_email: user ? user.email : '',
+            created_user_name: user ? user.username : '',
+            created_at: item.created_at,
+            updated_at: item.updated_at,
+        };
+    }
+
+    /**
+     * Get detail
+     * @param id
+     * @returns
+     */
+    async sharedPublic(id: number): Promise<ContactResponse> {
+        let item = await this.findById(id);
+        let groupId = item.group_id;
+        let groupName = '';
+        if (groupId) {
+            let group = await this.contactGroupRepository.findOne({
+                where: {
+                    id: groupId,
+                    ...TblContactGroup.queryAvailable(),
+                },
+            });
+            groupName = group.name;
+        }
+        let user = await this.getUserByUserId(item.created_user_id)
+
+        return {
+            id: item.id,
+            group_id: groupId,
+            group_name: groupName,
+            name: item.name,
+            phone_number: item.phone_number,
+            email: item.email,
+            is_public: item.is_public,
+            allow_edit: false,
             created_user_id: item.created_user_id,
             created_user_email: user ? user.email : '',
             created_user_name: user ? user.username : '',
@@ -308,7 +345,7 @@ export class ContactService {
         id: number,
         dto: ContactUpdateDto,
     ): Promise<ContactResponse> {
-        let item = await this.findById(userId, id);
+        let item = await this.findByAuthor(userId, id);
 
         if (dto.group_id && dto.group_id !== item.group_id) {
             let checkGroup = await this.findGroupById(userId, dto.group_id);
@@ -374,7 +411,7 @@ export class ContactService {
      * @returns
      */
     async delete(userId: number, id: number): Promise<void> {
-        let item = await this.findById(userId, id);
+        let item = await this.findByAuthor(userId, id);
 
         await this.contactRepository.update(
             {
@@ -429,10 +466,33 @@ export class ContactService {
 
     /**
      * Find by id
+     * @param id
+     */
+    async findById(id): Promise<TblContact> {
+        let builder = this.contactRepository
+            .createQueryBuilder(TblContact.tableName)
+            .select('*')
+            .where(`id = ${id}`)
+            .andWhere(TblContact.queryStrAvailable());
+
+        let item = await builder.getRawOne();
+
+        if (!item) {
+            throw new ApiValidationException(
+                'id',
+                `Contact id [${id}] not found`,
+            );
+        }
+
+        return item;
+    }
+
+    /**
+     * Find by id
      * @param userId
      * @param id
      */
-    async findById(userId, id): Promise<TblContact> {
+    async findByAuthor(userId, id): Promise<TblContact> {
         let builder = this.contactRepository
             .createQueryBuilder(TblContact.tableName)
             .select('*')
@@ -484,7 +544,7 @@ export class ContactService {
         contactId: number,
         publicStatus: number
     ): Promise<void> {
-        await this.findById(userId, contactId);
+        await this.findByAuthor(userId, contactId);
         await this.contactRepository.update(
             {
                 id: contactId,
@@ -507,7 +567,7 @@ export class ContactService {
         contactId: number,
         dto: ContactShareDto,
     ): Promise<void> {
-        await this.findById(userId, contactId);
+        await this.findByAuthor(userId, contactId);
 
         let shareUserIds = [];
         if (dto.user_id) {
