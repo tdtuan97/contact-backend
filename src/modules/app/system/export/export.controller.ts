@@ -12,7 +12,6 @@ import {
 import {ContactService} from '@/modules/app/system/contact/contact.service';
 import {ContactExportDto} from "@/modules/app/system/export/export.dto";
 import {Parser} from '@json2csv/plainjs';
-import * as console from "console";
 import * as fs from "fs";
 import {UtilService} from "@/shared/services/util.service";
 
