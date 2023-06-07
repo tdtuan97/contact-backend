@@ -1,12 +1,8 @@
-import { PageOptionsDto } from '@/common/dto/page.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import {
-    IsNumber,
-    IsOptional,
     IsString,
     MaxLength,
     MinLength,
-    ValidateIf,
 } from 'class-validator';
 
 export class ContactImportDto {
@@ -14,7 +10,11 @@ export class ContactImportDto {
         description: 'Filename',
     })
     @IsString()
-    @MinLength(1)
-    @MaxLength(255)
+    @MinLength(1, {
+        message: "Please upload a CSV file."
+    })
+    @MaxLength(255, {
+        message: "Please upload a CSV file."
+    })
     filename: string;
 }

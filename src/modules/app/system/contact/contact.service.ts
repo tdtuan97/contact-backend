@@ -13,7 +13,6 @@ import {
 import {ContactResponse} from '@/modules/app/system/contact/contact.class';
 import TblContactSharing, {ShareMode} from "@/entities/core/tbl-contact-sharing.entity";
 import TblUser from "@/entities/core/tbl-user.entity";
-import * as console from "console";
 
 @Injectable()
 export class ContactService {
@@ -546,41 +545,87 @@ export class ContactService {
     }
 
     async imports(userId, data) {
-        let results = [];
-
         // Validate data
         let rows = [];
         data.map((item) => {
-            rows.push(item)
+            let errors = [];
+            if (!this.validateString(item.name)) {
+                errors.push('Contact name invalid')
+            }
+
+            if (!this.validateString(item.phone_number)) {
+                errors.push('Contact Phone number invalid')
+            }
+
+            if (!this.validateString(item.email)) {
+                errors.push('Contact Email invalid')
+            }
+
+            // Parse data is public
+            let isPublic = parseInt(item.is_public ?? '0')
+            isPublic = (isPublic === 1 || isPublic === 0) ? isPublic : 0;
+
+            rows.push({
+                ...item,
+                is_public: isPublic,
+                errors: errors
+            })
         })
 
-        let chunks = this.chunks(rows, 5);
+        let results = [];
+        let count = 0;
+        let chunks = this.chunks(rows, 1000);
         for (const contacts of chunks) {
             try {
-                let dataInsert = contacts.map((row) => {
-                    return {
-                        name: row.name,
-                        phone_number: row.phone_number,
-                        email: row.email,
-                        is_public: row.is_public,
-                        created_user_id: userId,
-                        is_deleted: TblContactGroup.NOT_DELETED,
-                        is_active: TblContactGroup.IS_ACTIVE,
+                let dataInsert = [];
+                contacts.map((row) => {
+                    let status;
+                    let errors = []
+                    if (row.errors.length > 0) {
+                        status = 'error'
+                        errors = row.errors
                     }
+                    else {
+                        status = 'success'
+                        dataInsert.push({
+                            name: row.name,
+                            phone_number: row.phone_number,
+                            email: row.email,
+                            is_public: row.is_public,
+                            created_user_id: userId,
+                            is_deleted: TblContactGroup.NOT_DELETED,
+                            is_active: TblContactGroup.IS_ACTIVE,
+                        })
+                    }
+                    results.push({
+                        'row': count,
+                        'name': row.name ?? "",
+                        'errors': errors,
+                        'status': status
+                    })
+                    count++
                 })
+
                 let resultInsert = await this.contactRepository
                     .createQueryBuilder()
                     .insert()
                     .values(dataInsert)
                     .execute()
 
-                console.log(resultInsert.generatedMaps)
+                //console.log(resultInsert.generatedMaps)
             } catch (e) {
                 Logger.error(`Import chunk error`, e)
             }
         }
+
+        return results
     }
 
+    /**
+     * Split array
+     * @param array
+     * @param chunkSize
+     */
     chunks(array, chunkSize) {
         const result = [];
         for (let i = 0; i < array.length; i += chunkSize) {
@@ -588,5 +633,13 @@ export class ContactService {
             result.push(chunk);
         }
         return result;
+    }
+
+    /**
+     * Validate string
+     * @param str
+     */
+    validateString(str) {
+        return (typeof str === "string") && (str.length > 0) && (str.length <= 255)
     }
 }

@@ -12,7 +12,7 @@ import { ApiExceptionFilter } from './common/filters/api-exception.filter';
 import { ApiTransformInterceptor } from './common/interceptors/api-transform.interceptor';
 import { setupSwagger } from './setup-swagger';
 import { LoggerService } from './shared/logger/logger.service';
-import path from "path";
+import {resolve} from "path";
 
 const SERVER_PORT = process.env.SERVER_PORT;
 const PREFIX = process.env.PREFIX ?? '';
@@ -49,6 +49,11 @@ async function bootstrap() {
             },
         }),
     );
+
+    // Mount public path
+    app.useStaticAssets({
+        root: resolve("./public"),
+    });
 
     // exception
     app.useGlobalFilters(

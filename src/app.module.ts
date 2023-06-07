@@ -29,17 +29,6 @@ import {ContactAppModule} from "@/modules/app/contact-app.module";
             envFilePath: [`.env.${process.env.NODE_ENV}`, '.env'],
         }),
 
-        ServeStaticModule.forRoot(
-            {
-                rootPath: path.join(__dirname, '..', '/public'),
-                serveRoot: '/public/',
-               /* serveStaticOptions: {
-                    extensions: ['html', 'csv']
-                },*/
-                renderPath: '/public/*',
-            },
-        ),
-
         // Default DB Connection
         TypeOrmModule.forRootAsync({
             imports: [ConfigModule, LoggerModule],

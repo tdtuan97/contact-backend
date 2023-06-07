@@ -64,13 +64,13 @@ export class ExportController {
                 created_user_id: item.created_user_id ? item.created_user_id.toString() : '',
                 created_user_email: item.created_user_email ? item.created_user_email.toString() : '',
                 created_user_name: item.created_user_name ? item.created_user_name.toString() : '',
-                created_at: item.created_at ? item.created_at.toString() : '',
-                updated_at: item.updated_at ? item.updated_at.toString() : ''
+                created_at: item.created_at ? item.created_at.toISOString() : '',
+                updated_at: item.updated_at ? item.updated_at.toISOString() : ''
             });
         });
 
         let csvContent = parser.parse(json);
-        let filename = `public/export_contact_${this.utilService.generateRandomValue(10)}.csv`
+        let filename = `public/export/contact_${this.utilService.generateRandomValue(10)}.csv`
         await fs.writeFile(filename, csvContent, err => {
             if (err) {
                 console.error(err);
@@ -78,7 +78,7 @@ export class ExportController {
         });
 
         return {
-            filename: filename
+            filename: filename.replace('public/', '')
         }
     }
 }
