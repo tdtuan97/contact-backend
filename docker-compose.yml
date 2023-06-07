@@ -1,27 +1,24 @@
 version: '3'
 
 services:
-  ec-backend:
+  contact-backend:
     build: .
-    image: ghcr.io/tdtuan97/echarge-backend:latest
-    container_name: ec_backend_node
+    image: ghcr.io/tdtuan97/contact-backend:latest
+    container_name: contact_backend_node
     restart: always
     env_file:
       - .env
       - .env.production
     #extra_hosts:
     #  - 'host.docker.internal:host-gateway'
-    #ports:
-      # - '${SERVER_PORT}:${SERVER_PORT}'
-      #- '${WS_PORT}:${WS_PORT}'
     networks:
-      - ec-backend-network
+      - contact-backend-network
 
-  ec-backend-nginx:
+  contact-backend-nginx:
     build:
       context: ./deploy/nginx
       dockerfile: Dockerfile
-    container_name: ec_backend_nginx
+    container_name: contact_backend_nginx
     restart: unless-stopped
     tty: true
     ports:
@@ -32,11 +29,11 @@ services:
       - ./logs/nginx/:/var/logs/nginx/
       - ./deploy/nginx/conf.d/:/etc/nginx/conf.d/
       - ./deploy/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - /etc/letsencrypt/live/dev-backend-api.rabbitevc.vn/fullchain.pem:/etc/nginx/ssl/cert.pem
-      - /etc/letsencrypt/live/dev-backend-api.rabbitevc.vn/privkey.pem:/etc/nginx/ssl/private.pem
+      #- /etc/letsencrypt/live/dev-backend-api.rabbitevc.vn/fullchain.pem:/etc/nginx/ssl/cert.pem
+      #- /etc/letsencrypt/live/dev-backend-api.rabbitevc.vn/privkey.pem:/etc/nginx/ssl/private.pem
     depends_on:
-      - ec-backend
+      - contact-backend
     networks:
-      - ec-backend-network
+      - contact-backend-network
 networks:
-  ec-backend-network:
+  contact-backend-network:
