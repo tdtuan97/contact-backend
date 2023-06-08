@@ -6,10 +6,11 @@ import {UtilService} from 'src/shared/services/util.service';
 import {Brackets, EntityManager, In, Not, Repository} from 'typeorm';
 import {RedisService} from 'src/shared/services/redis.service';
 import {AccountInfo, UserResponse} from './user.class';
-import {UpdatePasswordDto, UpdateUserInfoDto, UserPaginateDto} from './user.dto';
+import {UpdatePasswordDto, UpdateUserInfoDto, UserByContactPaginateDto, UserPaginateDto} from './user.dto';
 import TblUser from '@/entities/core/tbl-user.entity';
 import {ApiValidationException} from '@/common/exceptions/api-validation.exception';
 import {RegisterDto} from '@/modules/app/auth/auth.dto';
+import TblContactSharing from "@/entities/core/tbl-contact-sharing.entity";
 import * as console from "console";
 
 @Injectable()
@@ -17,6 +18,8 @@ export class UserService {
     constructor(
         @InjectRepository(TblUser)
         private userRepository: Repository<TblUser>,
+        @InjectRepository(TblContactSharing)
+        private contactSharingRepository: Repository<TblContactSharing>,
         private redisService: RedisService,
         @InjectEntityManager() private entityManager: EntityManager,
         private util: UtilService,
@@ -38,6 +41,7 @@ export class UserService {
             page,
             all,
             keyword,
+            contact_id
         } = params;
         let result: UserResponse[] = [];
 
@@ -60,6 +64,11 @@ export class UserService {
             );
         }
 
+        let sharedIds = [];
+        if (contact_id) {
+            sharedIds = await this.findSharedUserIds(contact_id)
+        }
+
         builder = builder.orderBy('email', 'ASC');
 
         if (all !== '1') {
@@ -70,6 +79,9 @@ export class UserService {
         const list: TblUser[] = await builder.getRawMany();
 
         list.map((item) => {
+            let checkShared = sharedIds.find((tmpId) => {
+                return tmpId === item.id
+            })
             result.push({
                 id: item.id,
                 username: item.username,
@@ -77,11 +89,11 @@ export class UserService {
                 last_name: item.last_name,
                 email: item.email,
                 full_name: item.first_name + ' ' + item.last_name,
+                is_shared: !!checkShared,
                 created_at: item.created_at,
                 updated_at: item.updated_at,
             });
         });
-
 
         return [result, total];
     }
@@ -311,5 +323,24 @@ export class UserService {
                 .getRedis()
                 .set(`user:passwordVersion:${id}`, parseInt(v) + 1);
         }
+    }
+
+    /**
+     * Find user ids
+     * @param contactId
+     */
+    async findSharedUserIds(contactId){
+        let ids = [];
+        let rows = await this.contactSharingRepository.find({
+            where:{
+                contact_id: contactId,
+            }
+        })
+
+        rows.map((item) => {
+            ids.push(item.user_id)
+        })
+
+        return ids;
     }
 }

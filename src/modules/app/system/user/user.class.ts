@@ -43,6 +43,9 @@ export class UserResponse {
     @ApiProperty({ description: 'Full name' })
     full_name: string;
 
+    @ApiProperty({ description: 'Is Shared' })
+    is_shared?: boolean;
+
     @ApiProperty({ description: 'Email' })
     email: string;
 

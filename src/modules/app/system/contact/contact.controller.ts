@@ -124,6 +124,19 @@ export class ContactController {
     }
 
     @ApiOperation({
+        summary: 'Shared Public',
+    })
+    @ApiOkResponse({ type: ContactResponse })
+    @Authorize()
+    @Get(':id/shared-users')
+    async sharedUsers(
+        @Param() params: any,
+        @AuthUser() user: IAuthUser,
+    ): Promise<ContactResponse> {
+        return await this.contactService.sharedPublic(params.id);
+    }
+
+    @ApiOperation({
         summary: 'Public',
     })
     @Post(':id/public')

@@ -69,4 +69,22 @@ export class UserPaginateDto extends PageOptionsDto {
     @IsString()
     @MaxLength(255)
     keyword: string;
+
+    @ApiProperty({
+        description: 'Contact ID',
+    })
+    @IsOptional()
+    @IsString()
+    @MaxLength(255)
+    contact_id: string;
+}
+
+export class UserByContactPaginateDto extends PageOptionsDto {
+    @ApiProperty({
+        description: 'Contact ID',
+    })
+    @IsOptional()
+    @IsString()
+    @MaxLength(255)
+    contact_id: string;
 }

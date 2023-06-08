@@ -62,6 +62,7 @@ export class ContactService {
             builder = builder.andWhere(`is_public = ${is_public}`);
         }
 
+        let sharedIds = [];
         switch (type) {
             case "me":
                 builder = builder.andWhere(
@@ -71,19 +72,29 @@ export class ContactService {
                 );
                 break;
             case "shared":
+            case "shared-to-me":
+                // Get list contact ID from table shared
+                sharedIds = await this.findSharedContactIds(userId);
+                sharedIds = sharedIds.length > 0 ? sharedIds : [-1]
                 builder = builder.andWhere(
                     new Brackets((qb) => {
                         qb.andWhere(`created_user_id <> ${userId}`);
-                        qb.andWhere(`is_public = ${PublicStatus.PUBLIC}`);
+                        qb.andWhere('id IN (:...sharedIds)', {
+                            sharedIds: sharedIds,
+                        });
                     }),
                 );
                 break;
             case "all":
             default:
+                sharedIds = await this.findSharedContactIds(userId);
+                sharedIds = sharedIds.length > 0 ? sharedIds : [-1]
                 builder = builder.andWhere(
                     new Brackets((qb) => {
-                        qb.andWhere(`created_user_id = ${userId}`);
-                        qb.orWhere(`is_public = ${PublicStatus.PUBLIC}`);
+                        qb.orWhere(`created_user_id = ${userId}`);
+                        qb.orWhere('id IN (:...sharedIds)', {
+                            sharedIds: sharedIds,
+                        });
                     }),
                 );
                 break;
@@ -244,7 +255,7 @@ export class ContactService {
     }
 
     /**
-     * Get detail
+     * Get Shared public
      * @param id
      * @returns
      */
@@ -499,12 +510,18 @@ export class ContactService {
             .where(`id = ${id}`)
             .andWhere(TblContact.queryStrAvailable());
 
-        builder = builder.andWhere(
-            new Brackets((qb) => {
-                qb.andWhere(`created_user_id = ${userId}`);
-                qb.orWhere(`is_public = ${PublicStatus.PUBLIC}`);
-            }),
-        );
+
+        let sharedIds = await this.findSharedContactIds(userId);
+        if (sharedIds.length > 0){
+            builder = builder.andWhere(
+                new Brackets((qb) => {
+                    qb.orWhere(`created_user_id = ${userId}`);
+                    qb.orWhere('id IN (:...sharedIds)', {
+                        sharedIds: sharedIds,
+                    });
+                }),
+            );
+        }
 
         let item = await builder.getRawOne();
 
@@ -570,8 +587,8 @@ export class ContactService {
         await this.findByAuthor(userId, contactId);
 
         let shareUserIds = [];
-        if (dto.user_id) {
-            shareUserIds = dto.user_id.split(',');
+        if (dto.user_ids.length > 0) {
+            shareUserIds = dto.user_ids;
             shareUserIds = shareUserIds.filter((tmpId) => {
                 tmpId = parseInt(tmpId);
                 return !isNaN(tmpId) && tmpId !== userId
@@ -701,5 +718,24 @@ export class ContactService {
      */
     validateString(str) {
         return (typeof str === "string") && (str.length > 0) && (str.length <= 255)
+    }
+
+    /**
+     * Find shared id
+     * @param userId
+     */
+    async findSharedContactIds(userId){
+        let sharedIds = [];
+        let rows = await this.contactSharingRepository.find({
+            where:{
+                user_id: userId,
+            }
+        })
+
+        rows.map((item) => {
+            sharedIds.push(item.contact_id)
+        })
+
+        return sharedIds;
     }
 }

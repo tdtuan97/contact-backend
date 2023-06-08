@@ -1,6 +1,7 @@
 import { PageOptionsDto } from '@/common/dto/page.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import {
+    IsArray,
     IsNumber,
     IsOptional,
     IsString,
@@ -74,7 +75,7 @@ export class ContactPaginateDto extends PageOptionsDto {
     })
     @IsOptional()
     @IsString()
-    type: 'all' | 'me' | 'shared';
+    type: 'all' | 'me' | 'shared' | 'shared-to-me';
 }
 
 export class ContactCreateDto {
@@ -184,12 +185,6 @@ export class ContactShareDto {
     @ApiProperty({
         description: 'User ID',
     })
-    @IsString()
-    @MinLength(1, {
-        message: 'Minimum length must be greater than 1 character.'
-    })
-    @MaxLength(255, {
-        message: 'The maximum length must be less than 255 characters.'
-    })
-    user_id: string;
+    @IsArray()
+    user_ids: [];
 }
