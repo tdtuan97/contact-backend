@@ -15,7 +15,12 @@ export class ContactGroupPaginateDto extends PageOptionsDto {
     })
     @IsOptional()
     @IsString()
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     name = '';
 
     @ApiProperty({
@@ -23,7 +28,12 @@ export class ContactGroupPaginateDto extends PageOptionsDto {
     })
     @IsOptional()
     @IsString()
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     description = '';
 }
 
@@ -32,15 +42,24 @@ export class ContactGroupCreateDto {
         description: 'Group name',
     })
     @IsString()
-    @MinLength(1)
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     name: string;
 
     @ApiProperty({
         description: 'Group description',
     })
     @IsString()
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     description: string;
 }
 
@@ -49,14 +68,23 @@ export class ContactGroupUpdateDto {
         description: 'Group name',
     })
     @IsString()
-    @MinLength(1)
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     name: string;
 
     @ApiProperty({
         description: 'Group description',
     })
     @IsString()
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     description: string;
 }

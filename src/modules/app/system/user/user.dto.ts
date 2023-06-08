@@ -8,7 +8,6 @@ import {
     ValidateIf,
 } from 'class-validator';
 import { isEmpty } from 'lodash';
-import {PaginatedResponseDto} from "@/common/class/res.class";
 import {PageOptionsDto} from "@/common/dto/page.dto";
 
 export class UpdateUserInfoDto {

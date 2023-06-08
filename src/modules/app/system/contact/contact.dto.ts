@@ -15,8 +15,12 @@ export class ContactPaginateDto extends PageOptionsDto {
     })
     @IsOptional()
     @IsString()
-    @MinLength(1)
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     group_id: string;
 
     @ApiProperty({
@@ -24,8 +28,12 @@ export class ContactPaginateDto extends PageOptionsDto {
     })
     @IsOptional()
     @IsString()
-    @MinLength(1)
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     name: string;
 
     @ApiProperty({
@@ -33,8 +41,12 @@ export class ContactPaginateDto extends PageOptionsDto {
     })
     @IsOptional()
     @IsString()
-    @MinLength(1)
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     phone_number: string;
 
     @ApiProperty({
@@ -42,8 +54,12 @@ export class ContactPaginateDto extends PageOptionsDto {
     })
     @IsOptional()
     @IsString()
-    @MinLength(1)
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     email: string;
 
     @ApiProperty({
@@ -74,23 +90,35 @@ export class ContactCreateDto {
         description: 'Contact name',
     })
     @IsString()
-    @MinLength(1)
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     name: string;
 
     @ApiProperty({
         description: 'Contact Phone Number',
     })
-    @MinLength(8)
-    @MaxLength(12)
+    @MinLength(8, {
+        message: 'Minimum length must be greater than 8 character.'
+    })
+    @MaxLength(12, {
+        message: 'The maximum length must be less than 12 characters.'
+    })
     phone_number: string;
 
     @ApiProperty({
         description: 'Contact Phone Number',
     })
     @IsString()
-    @MinLength(1)
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     email: string;
 
     @ApiProperty({
@@ -113,24 +141,36 @@ export class ContactUpdateDto {
         description: 'Contact name',
     })
     @IsString()
-    @MinLength(1)
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     name: string;
 
     @ApiProperty({
         description: 'Contact Phone Number',
     })
     @IsString()
-    @MinLength(8)
-    @MaxLength(12)
+    @MinLength(8, {
+        message: 'Minimum length must be greater than 8 character.'
+    })
+    @MaxLength(12, {
+        message: 'The maximum length must be less than 12 characters.'
+    })
     phone_number: string;
 
     @ApiProperty({
         description: 'Contact Phone Number',
     })
     @IsString()
-    @MinLength(1)
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     email: string;
 
     @ApiProperty({
@@ -145,7 +185,11 @@ export class ContactShareDto {
         description: 'User ID',
     })
     @IsString()
-    @MinLength(1)
-    @MaxLength(255)
+    @MinLength(1, {
+        message: 'Minimum length must be greater than 1 character.'
+    })
+    @MaxLength(255, {
+        message: 'The maximum length must be less than 255 characters.'
+    })
     user_id: string;
 }
