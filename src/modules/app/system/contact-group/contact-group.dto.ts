@@ -1,8 +1,6 @@
 import { PageOptionsDto } from '@/common/dto/page.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import {
-    IsBoolean,
-    IsEnum,
     IsOptional,
     IsString,
     MaxLength,
@@ -21,7 +19,7 @@ export class ContactGroupPaginateDto extends PageOptionsDto {
     @MaxLength(255, {
         message: 'The maximum length must be less than 255 characters.'
     })
-    name = '';
+    name: string;
 
     @ApiProperty({
         description: 'Contact description',
@@ -34,7 +32,7 @@ export class ContactGroupPaginateDto extends PageOptionsDto {
     @MaxLength(255, {
         message: 'The maximum length must be less than 255 characters.'
     })
-    description = '';
+    description: string;
 }
 
 export class ContactGroupCreateDto {

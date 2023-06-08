@@ -68,5 +68,5 @@ export class UserPaginateDto extends PageOptionsDto {
     @IsOptional()
     @IsString()
     @MaxLength(255)
-    keyword = '';
+    keyword: string;
 }
