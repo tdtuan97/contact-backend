@@ -36,6 +36,7 @@
         "prepare": "husky install"
     },
     "dependencies": {
+        "@elastic/elasticsearch": "^8.8.1",
         "@fastify/multipart": "^7.6.0",
         "@fastify/static": "^6.5.1",
         "@fastify/swagger": "^8.2.0",
@@ -45,6 +46,7 @@
         "@nestjs/common": "^9.2.0",
         "@nestjs/config": "^2.2.0",
         "@nestjs/core": "^9.2.0",
+        "@nestjs/elasticsearch": "^9.0.0",
         "@nestjs/jwt": "^10.0.2",
         "@nestjs/platform-express": "^9.4.2",
         "@nestjs/platform-fastify": "^9.3.10",

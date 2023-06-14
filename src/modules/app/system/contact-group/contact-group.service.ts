@@ -10,12 +10,15 @@ import {
     ContactGroupUpdateDto,
 } from '@/modules/app/system/contact-group/contact-group.dto';
 import * as console from 'console';
+import {ElasticsearchService} from "@nestjs/elasticsearch";
+import {PostSearchBody, PostSearchResult} from "@/shared/elastic/elastic.interface";
 
 @Injectable()
 export class ContactGroupService {
     constructor(
         @InjectRepository(TblContactGroup)
         private contactGroupRepository: Repository<TblContactGroup>,
+        private readonly elasticsearchService: ElasticsearchService
     ) {
     }
 
@@ -37,6 +40,19 @@ export class ContactGroupService {
             all
         } = params;
         let result: ContactGroupResponse[] = [];
+
+        /*let test = await this.elasticsearchService.search<PostSearchResult>({
+            index: 'kibana_sample_data_ecommerce',
+            body: {
+                query: {
+                    multi_match: {
+                        query: '',
+                        //fields: []
+                    }
+                }
+            }
+        })
+        console.log(test)*/
 
         let builder = this.contactGroupRepository
             .createQueryBuilder(TblContactGroup.tableName)

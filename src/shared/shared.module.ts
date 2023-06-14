@@ -6,9 +6,11 @@ import { RedisModule } from './redis/redis.module';
 import { RedisService } from './services/redis.service';
 import { UtilService } from './services/util.service';
 import { ConfigurationKeyPaths } from '@/config/configuration';
+import {ElasticService} from "@/shared/services/elastic.service";
+import {ElasticModule} from "@/shared/elastic/elastic.module";
 
 // common provider list
-const providers = [UtilService, RedisService];
+const providers = [UtilService, RedisService,ElasticService];
 
 /**
  * Global shared module
@@ -44,8 +46,10 @@ const providers = [UtilService, RedisService];
             }),
             inject: [ConfigService],
         }),
+
+        ElasticModule
     ],
     providers: [...providers],
-    exports: [HttpModule, CacheModule, JwtModule, ...providers],
+    exports: [HttpModule, CacheModule, JwtModule, ElasticModule, ...providers],
 })
 export class SharedModule {}

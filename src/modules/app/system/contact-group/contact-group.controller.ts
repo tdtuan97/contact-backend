@@ -26,7 +26,9 @@ import { IAuthUser } from '@/modules/app/contact-app.interface';
 @ApiTags('Contact Group')
 @Controller('contact-groups')
 export class ContactGroupController {
-    constructor(private contactGroupService: ContactGroupService) {}
+    constructor(
+        private contactGroupService: ContactGroupService,
+    ) {}
 
     @ApiOperation({
         summary: 'List',
