@@ -10,7 +10,7 @@ import {ElasticService} from "@/shared/services/elastic.service";
 import {ElasticModule} from "@/shared/elastic/elastic.module";
 
 // common provider list
-const providers = [UtilService, RedisService,ElasticService];
+const providers = [UtilService, RedisService, /*ElasticService*/];
 
 /**
  * Global shared module
@@ -47,9 +47,9 @@ const providers = [UtilService, RedisService,ElasticService];
             inject: [ConfigService],
         }),
 
-        ElasticModule
+        //ElasticModule
     ],
     providers: [...providers],
-    exports: [HttpModule, CacheModule, JwtModule, ElasticModule, ...providers],
+    exports: [HttpModule, CacheModule, JwtModule, /*ElasticModule*/ ...providers],
 })
 export class SharedModule {}
